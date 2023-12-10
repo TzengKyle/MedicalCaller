@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jfif" href="/static/icon.jfif">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Medical Caller</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"
+        integrity="sha512-zoJXRvW2gC8Z0Xo3lBbao5+AS3g6YWr5ztKqaicua11xHo+AvE1b0lT9ODgrHTmNUxeCw0Ry4BGRYZfXu70weg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var socket = io.connect('http://' + document.domain + ':' + location.port)
+            socket.on('connect', function () {
+                // alert("connect")
+                socket.send("User connected!")
+            })
+
+            $('#confirm').on('click', function () {
+                // alert(("confirm" + $('#update_number').val()))
+                var update_number = $('#update_number').val()
+                if (update_number > 999 || update_number < 0) {
+                    alert("超出範圍")
+                    return
+                }
+
+                first_number = parseInt(update_number / 100);
+                second_number = parseInt((update_number % 100) / 10);
+                third_number = update_number % 10;
+
+                $('#update_number').val('')
+                displayCurrentNumber()
+                socket.emit('update_number', update_number)
+            })
+
+
+            $('#last_number').on('click', function () {
+
+                var update_number = parseInt(100 * first_number) + parseInt(10 * second_number) + parseInt(third_number) - 1
+                if (update_number > 999 || update_number < 0) {
+                    alert("超出範圍")
+                    return
+                }
+
+                first_number = parseInt(update_number / 100);
+                second_number = parseInt((update_number % 100) / 10);
+                third_number = update_number % 10;
+
+                displayCurrentNumber()
+                socket.emit('last_number', update_number)
+            })
+
+
+            $('#next_number').on('click', function () {
+                var update_number = parseInt(100 * first_number) + parseInt(10 * second_number) + parseInt(third_number) + 1
+                if (update_number > 999 || update_number < 0) {
+                    alert("超出範圍")
+                    return
+                }
+
+                first_number = parseInt(update_number / 100);
+                second_number = parseInt((update_number % 100) / 10);
+                third_number = update_number % 10;
+
+                displayCurrentNumber()
+                socket.emit('next_number', update_number)
+            })
+
+            $('#call').on('click', function () {
+                socket.emit('call')
+            })
+        })
+
+    </script>
+
+    <div class="flex min-h-full flex-col justify-center items-center w-screen h-screen py-12 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <img class="mx-auto h-24 w-auto" src="{{url_for('static', filename='icon.jfif')}}" alt="Your Company">
+            <div id="current_number"
+                class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">目前號碼: </div>
+        </div>
+
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <div class="space-y-6">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <label for="password" class="block text-sm font-medium leading-6 text-gray-900">更新號碼</label>
+                    </div>
+                    <div class="flex justify-evenly">
+                        <div class="mt-2">
+                            <input id="update_number" type="number" autocomplete="current-password" required
+                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
+                        </div>
+
+                        <button id="confirm"
+                            class="flex w-1/3 justify-center rounded-md bg-indigo-600 text-sm px-3 py-3 ml-1 my-0 font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">確定</button>
+
+                    </div>
+
+                </div>
+
+                <div class="flex justify-evenly">
+                    <button id="last_number"
+                        class="flex w-1/2 justify-center rounded-md bg-indigo-600 px-3 py-1.5 mr-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">◀️上一號</button>
+                    <button id="next_number"
+                        class="flex w-1/2 justify-center rounded-md bg-indigo-600 px-3 py-1.5 ml-1 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">下一號▶️</button>
+                </div>
+
+                <div>
+                    <button id="call"
+                        class="flex w-full justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300">叫號</button>
+                </div>
+
+                <div>
+                    <a href="{{url_for('index')}}">
+                        <button id="goBack"
+                            class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">返回</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        first_number = 0
+        second_number = 0
+        third_number = 0
+
+        function displayCurrentNumber() {
+            document.getElementById("current_number").innerHTML = "目前號碼: " + first_number + second_number + third_number;
+        }
+        displayCurrentNumber()
+    </script>
+</body>
+
+</html>

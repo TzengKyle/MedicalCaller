@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jfif" href="/static/icon.jfif">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Medical Caller</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"
+        integrity="sha512-zoJXRvW2gC8Z0Xo3lBbao5+AS3g6YWr5ztKqaicua11xHo+AvE1b0lT9ODgrHTmNUxeCw0Ry4BGRYZfXu70weg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var socket = io.connect('http://' + document.domain + ':' + location.port)
+            // var socket = io.connect("http://localhost:5000")
+            socket.on('connect', function () {
+                // alert("connect")
+                socket.send("User connected!")
+            })
+
+            socket.on('update_number', function (data) {
+                // alert(data)
+                fisrt_number = parseInt(parseInt(data) / 100)
+                second_number = parseInt(parseInt(data) % 100 / 10)
+                third_number = parseInt(parseInt(data) % 10)
+                $('#first_number').html(fisrt_number);
+                $('#second_number').html(second_number);
+                $('#third_number').html(third_number);
+            })
+
+            socket.on('last_number', function (data) {
+                // alert(data)
+                fisrt_number = parseInt(parseInt(data) / 100)
+                second_number = parseInt(parseInt(data) % 100 / 10)
+                third_number = parseInt(parseInt(data) % 10)
+                $('#first_number').html(fisrt_number);
+                $('#second_number').html(second_number);
+                $('#third_number').html(third_number);
+            })
+
+            socket.on('next_number', function (data) {
+                // alert(data)
+                fisrt_number = parseInt(parseInt(data) / 100)
+                second_number = parseInt(parseInt(data) % 100 / 10)
+                third_number = parseInt(parseInt(data) % 10)
+                $('#first_number').html(fisrt_number);
+                $('#second_number').html(second_number);
+                $('#third_number').html(third_number);
+            })
+
+            socket.on('call', function () {
+                // alert($('#first_number').html())
+                playSound($('#first_number').html())
+                setTimeout(function () { playSound($('#second_number').html()) }, 800)
+                setTimeout(function () { playSound($('#third_number').html()) }, 1600)
+            })
+        })
+    </script>
+
+    <div class="flex justify-center items-center w-screen h-screen">
+        <div class="flex justify-evenly  items-center  w-96 h-40 rounded-2xl m-8 text-9xl font-black">
+            <div id="first_number">0</div>
+            <div id="second_number">0</div>
+            <div id="third_number">0</div>
+        </div>
+    </div>
+    <div id="KKK" onclick="divClicked()">1</div>
+
+    <script>
+        function playSound(audioNumber) {
+            let audio = new Audio('static/' + audioNumber + '.wav');
+            audio.play();
+        }
+    </script>
+</body>
+
+</html>
